@@ -154,4 +154,7 @@ if __name__ == '__main__':
         pygame.display.update()
         pygame.display.flip()
 
+        visibility += 1
+        visibility = visibility % 20
+
         clk.tick(FPS)
