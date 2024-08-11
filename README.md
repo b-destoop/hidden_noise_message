@@ -8,6 +8,8 @@ This is done by showing static noise (like on old tv's) when no sound is registe
 system's microphone, the noise shifts into the hidden message, but only by the amount of similarity of the sound that is
 picked up and the secret sound that is to be played.
 
+> _optional improvement_ : have the code show when no noise is made!
+
 ## todo
 
 - [ ] create a window with static noise

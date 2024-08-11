@@ -7,11 +7,17 @@ pygame.init()
 HEIGHT = pygame.display.Info().current_h
 WIDTH = pygame.display.Info().current_w
 
+NOISE_PXL_WDHT = 5
+NOISE_PXL_HGHT = 5
+
 wdw = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption('denoiser')
 
-BG_PATH = "images/test1.png"
-bg_img = pygame.image.load(BG_PATH)
+FPS = 25
+clk = pygame.time.Clock()
+
+code_img_PATH = "images/test1.png"
+code_img = pygame.image.load(code_img_PATH)
 
 wdw_width = wdw.get_width()
 wdw_height = wdw.get_height()
@@ -32,27 +38,60 @@ def update_sizing():
     wdw_width = wdw.get_width()
     wdw_height = wdw.get_height()
 
-    # make bg image full screen. Assume it is thinner than screen width
-    global bg_img
+    # make code_img image full screen. Assume it is thinner than screen width
+    global code_img
     new_height = wdw_height
-    new_width = (wdw_height / bg_img.get_height()) * bg_img.get_width()
-    bg_img = pygame.transform.scale(bg_img, (new_height, new_width))
+    new_width = (wdw_height / code_img.get_height()) * code_img.get_width()
+    code_img = pygame.transform.scale(code_img, (new_height, new_width))
+
+
+def draw_noise_pixel(wdw: pygame.Surface, color: tuple[int, int, int], coord: tuple[int, int]) -> None:
+    global NOISE_PXL_WDHT, NOISE_PXL_HGHT
+    coord_x = coord[0] - NOISE_PXL_WDHT / 2
+    coord_y = coord[1] - NOISE_PXL_HGHT / 2
+    pygame.draw.rect(wdw, color, (coord_x, coord_y, NOISE_PXL_WDHT, NOISE_PXL_HGHT))
 
 
 def update_drawing():
-    global bg_img
+    global code_img
     global wdw_width
     global wdw_height
 
     wdw.fill((0, 0, 0))
 
-    # draw the background image
-    bg_top_left_x = (wdw_width / 2) - (bg_img.get_width() / 2)
-    bg_top_left_y = (wdw_height / 2) - (bg_img.get_height() / 2)
-    wdw.blit(bg_img, (bg_top_left_x, bg_top_left_y))
+    code_img_top_left_x = (wdw_width // 2) - (code_img.get_width() // 2)
+    code_img_top_left_y = (wdw_height // 2) - (code_img.get_height() // 2)
 
-    # draw noise
-    pygame.draw.rect(wdw, (255, 0, 0), (wdw_width / 2 + 5, wdw_height / 2 + 5, 10, 10))
+    # wdw.blit(code_img, (code_img_top_left_x, code_img_top_left_y)) # optionally show the code_img image for development purposes
+
+    # draw noise box per box
+    noise_pxls_horizontal = wdw_width // NOISE_PXL_WDHT
+    noise_pxls_vertical = wdw_height // NOISE_PXL_HGHT
+
+    for pxl in range(noise_pxls_horizontal * noise_pxls_vertical):
+        # get the coordinates of the pixel
+        pxl_tl_x = (pxl % noise_pxls_horizontal) * NOISE_PXL_WDHT
+        pxl_tl_y = (pxl // noise_pxls_horizontal) * NOISE_PXL_HGHT
+
+        pxl_mid_x = pxl_tl_x + NOISE_PXL_WDHT // 2
+        pxl_mid_y = pxl_tl_y + NOISE_PXL_HGHT // 2
+
+        # check if the pixel falls over the code image
+        if (pxl_mid_x >= code_img_top_left_x) \
+                and (pxl_mid_x < (code_img_top_left_x + code_img.get_width())) \
+                and (pxl_mid_y >= code_img_top_left_y) \
+                and (pxl_mid_y < code_img_top_left_y + code_img.get_height()):
+            # get the color value of that part of the code_img image
+            rel_x = pxl_mid_x - code_img_top_left_x
+            rel_y = pxl_mid_y - code_img_top_left_y
+            color = code_img.get_at((rel_x, rel_y))
+
+            # color the pixel
+            draw_noise_pixel(wdw, color, (pxl_mid_x, pxl_mid_y))
+            continue
+
+        # just draw if it does not fall over the image
+        draw_noise_pixel(wdw, (0, 255, 0), (pxl_mid_x, pxl_mid_y))
 
 
 if __name__ == '__main__':
@@ -63,3 +102,5 @@ if __name__ == '__main__':
 
         pygame.display.update()
         pygame.display.flip()
+
+        clk.tick(FPS)
