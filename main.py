@@ -1,10 +1,14 @@
 import copy
 import sys
+import threading
+from tkinter import Tk
 
 import pygame
 from PIL import Image, ImageFilter
 
 pygame.init()
+
+thread_settings = None
 
 HEIGHT = pygame.display.Info().current_h
 WIDTH = pygame.display.Info().current_w
@@ -28,11 +32,12 @@ wdw_height = wdw.get_height()
 
 
 def handle_events():
-    global wdw
+    global wdw, thread_settings
     for event in pygame.event.get():
         match event.type:
             case pygame.QUIT:
                 pygame.quit()
+
                 sys.exit()
             case pygame.VIDEORESIZE:
                 update_sizing()
@@ -108,7 +113,24 @@ def draw_noise():
         draw_noise_pixel(wdw, (100, 255, 100), (pxl_mid_x, pxl_mid_y))
 
 
+def dials_main():
+    global tk_root
+    # create root window
+    tk_root = Tk()
+
+    # root window title and dimension
+    tk_root.title("Denoiser settings")
+    # Set geometry (widthxheight)
+    tk_root.geometry('350x200')
+
+    # all widgets will be here
+    # Execute Tkinter
+    tk_root.mainloop()
+
+
 if __name__ == '__main__':
+    thread_settings = threading.Thread(target=dials_main)
+    thread_settings.start()
 
     while True:
         handle_events()
