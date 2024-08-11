@@ -1,16 +1,38 @@
-# This is a sample Python script.
+import sys
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import pygame
+
+pygame.init()
+
+HEIGHT = pygame.display.Info().current_h
+WIDTH = pygame.display.Info().current_w
+
+FPS = 25
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def handle_events():
+    for event in pygame.event.get():
+        match event.type:
+            case pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
 
-# Press the green button in the gutter to run the script.
+def update_window():
+    global WIDTH, HEIGHT
+    WIDTH = wdw.get_width()
+    HEIGHT = wdw.get_height()
+    wdw.fill((0, 0, 0))
+    pygame.draw.rect(wdw, (255, 0, 0), (WIDTH / 2 + 5, HEIGHT / 2 + 5, 10, 10))
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    wdw = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+    pygame.display.set_caption('denoiser')
+
+    while True:
+        handle_events()
+        update_window()
+
+        pygame.display.update()
