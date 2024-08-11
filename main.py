@@ -76,7 +76,7 @@ def draw_noise():
     img_curr_size = copy.deepcopy(img_curr.size)
     img_curr = img_orig.filter(ImageFilter.GaussianBlur(20))
     img_curr = img_curr.resize(img_curr_size)
-    code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), 'RGB')
+    pygme_code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), 'RGB')
 
     # draw noise based on the state of the code image
     noise_pxls_horizontal = wdw_width // NOISE_PXL_WDHT
@@ -92,13 +92,13 @@ def draw_noise():
 
         # check if the pixel falls over the code image
         if (pxl_mid_x >= code_img_top_left_x) \
-                and (pxl_mid_x < (code_img_top_left_x + code_img.get_width())) \
+                and (pxl_mid_x < (code_img_top_left_x + pygme_code_img.get_width())) \
                 and (pxl_mid_y >= code_img_top_left_y) \
-                and (pxl_mid_y < code_img_top_left_y + code_img.get_height()):
+                and (pxl_mid_y < code_img_top_left_y + pygme_code_img.get_height()):
             # get the color value of that part of the code_img image
             rel_x = pxl_mid_x - code_img_top_left_x
             rel_y = pxl_mid_y - code_img_top_left_y
-            color = code_img.get_at((rel_x, rel_y))
+            color = pygme_code_img.get_at((rel_x, rel_y))
 
             # color the pixel
             draw_noise_pixel(wdw, color, (pxl_mid_x, pxl_mid_y))
