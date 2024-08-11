@@ -15,6 +15,8 @@ picked up and the secret sound that is to be played.
 Create noise using a gaussian curve. For the values which coincide with the code image, this gaussian curve should have
 a smaller standard deviation.
 
+> _note_ : the code that is to be shown should be white on a black background.
+
 ## todo
 
 - [x] create a window with static noise

@@ -3,7 +3,10 @@ import sys
 import threading
 import random
 from tkinter import Tk
+
+import numpy
 import numpy as np
+import cv2 as cv
 
 import pygame
 from PIL import Image, ImageFilter
@@ -24,10 +27,11 @@ pygame.display.set_caption('denoiser')
 FPS = 15
 clk = pygame.time.Clock()
 
-CODE_IMG_PATH = "images/test1.png"
-img_orig = Image.open(CODE_IMG_PATH)
+CODE_IMG_PATH = "images/test2_inv.png"
+FORMAT = "RGB"
+img_orig = Image.open(CODE_IMG_PATH).convert(FORMAT)
 img_curr = img_orig.filter(ImageFilter.GaussianBlur(2))
-visibility = 0
+invisibility = 0
 
 wdw_width = wdw.get_width()
 wdw_height = wdw.get_height()
@@ -85,9 +89,9 @@ def draw_noise():
 
     # distort the code image
     img_curr_size = copy.deepcopy(img_curr.size)
-    img_curr = img_orig.filter(ImageFilter.GaussianBlur(visibility))
+    img_curr = img_orig.filter(ImageFilter.GaussianBlur(invisibility))
     img_curr = img_curr.resize(img_curr_size)
-    pygme_code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), 'RGB').convert()
+    pygme_code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), FORMAT).convert()
     # wdw.blit(pygme_code_img, (code_img_top_left_x, code_img_top_left_y))
 
     # draw noise based on the state of the code image
@@ -95,13 +99,26 @@ def draw_noise():
     noise_pxls_vertical = wdw_height // NOISE_PXL_HGHT
 
     # numpy noise code
-    raster = np.random.normal(100, 75, (noise_pxls_vertical, noise_pxls_horizontal, 3)).astype(np.uint8)
 
+    code = np.asarray(img_curr)
+    h_start, w_start, _ = code.shape
+    w_diff = abs(wdw_width - w_start)
+    code = cv.resize(code, (noise_pxls_horizontal, noise_pxls_vertical), interpolation=cv.INTER_NEAREST)  # less pixels
+    # code = cv.resize(code, (w_start, h_start), interpolation=cv.INTER_NEAREST)
+    # code = numpy.pad(code, ((0, 0), (w_diff // 2, w_diff // 2), (0, 0)), 'minimum')
 
+    raster_code = np.random.normal(0, invisibility, (noise_pxls_vertical, noise_pxls_horizontal, 3)).astype(np.uint8)
+    raster_code = raster_code * code
+    raster_code = cv.resize(raster_code, (wdw_width, wdw_height), interpolation=cv.INTER_AREA)
 
-    pil_noise = Image.fromarray(raster, 'RGB')
-    pil_noise = pil_noise.resize((wdw_width, wdw_height))
-    pyg_img = pygame.image.frombytes(pil_noise.tobytes(), (pil_noise.width, pil_noise.height), 'RGB')
+    raster_rand = np.random.normal(255 / 2, 255, (noise_pxls_vertical, noise_pxls_horizontal, 3)).astype(np.uint8)
+    raster_rand = raster_rand * (np.invert(code) // 255)
+    raster_rand = cv.resize(raster_rand, (wdw_width, wdw_height), interpolation=cv.INTER_AREA)
+
+    result = np.bitwise_xor(raster_rand, raster_code)
+
+    pil_noise = Image.fromarray(result, FORMAT)
+    pyg_img = pygame.image.frombytes(pil_noise.tobytes(), (pil_noise.width, pil_noise.height), FORMAT)
     wdw.blit(pyg_img, (0, 0))
 
 
@@ -131,7 +148,9 @@ if __name__ == '__main__':
         pygame.display.update()
         pygame.display.flip()
 
-        visibility += 1
-        visibility = visibility % 20
+        invisibility += 1
+        invisibility = invisibility % 20
+
+        print(invisibility)
 
         clk.tick(FPS)
