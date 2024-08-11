@@ -1,6 +1,7 @@
 import copy
 import sys
 import threading
+import random
 from tkinter import Tk
 
 import pygame
@@ -25,7 +26,7 @@ clk = pygame.time.Clock()
 CODE_IMG_PATH = "images/test1.png"
 img_orig = Image.open(CODE_IMG_PATH)
 img_curr = img_orig.filter(ImageFilter.GaussianBlur(2))
-# code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), "RGB")
+visibility = 0
 
 wdw_width = wdw.get_width()
 wdw_height = wdw.get_height()
@@ -83,7 +84,7 @@ def draw_noise():
 
     # distort the code image
     img_curr_size = copy.deepcopy(img_curr.size)
-    img_curr = img_orig.filter(ImageFilter.GaussianBlur(20))
+    img_curr = img_orig.filter(ImageFilter.GaussianBlur(visibility))
     img_curr = img_curr.resize(img_curr_size)
     pygme_code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), 'RGB')
 
@@ -92,7 +93,7 @@ def draw_noise():
     noise_pxls_vertical = wdw_height // NOISE_PXL_HGHT
 
     for pxl in range(noise_pxls_horizontal * noise_pxls_vertical):
-        code_val = 100 # % of the color to keep
+        code_val = 100  # % of the color to keep
 
         # get the coordinates of the pixel
         pxl_tl_x = (pxl % noise_pxls_horizontal) * NOISE_PXL_WDHT
@@ -114,16 +115,16 @@ def draw_noise():
             # get the 'whiteness' of the pixel
             code_val = color.grayscale().hsva[2]  # hsva = hue (0-360), saturation (0-100), value (0-100), alpha (0-100)
 
-        def map_func(val):
-            res = val * (code_val / 100)
-            if res > 255:
-                return 255
-            elif res < 0:
-                return 0
-            return res
 
-        # multiply the 'whiteness' of the code image with the preferred background color
-        color = tuple(map(map_func, (100, 255, 100)))
+        # create noise with randomness
+        rand_r = random.uniform(0, 255)
+        rand_g = random.uniform(0, 255)
+        rand_b = random.uniform(0, 255)
+
+        color = rand_r, rand_g, rand_b
+        color = tuple(map(lambda x: x * code_val/100, color))
+
+        # map the 'whiteness' of the code image with the preferred background color
         draw_noise_pixel(wdw, color, (pxl_mid_x, pxl_mid_y))
 
 
