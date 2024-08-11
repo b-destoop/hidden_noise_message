@@ -1,3 +1,4 @@
+import copy
 import sys
 
 import pygame
@@ -20,7 +21,7 @@ clk = pygame.time.Clock()
 CODE_IMG_PATH = "images/test1.png"
 img_orig = Image.open(CODE_IMG_PATH)
 img_curr = img_orig.filter(ImageFilter.GaussianBlur(2))
-code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), "RGB")
+# code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), "RGB")
 
 wdw_width = wdw.get_width()
 wdw_height = wdw.get_height()
@@ -42,11 +43,10 @@ def update_sizing():
     wdw_height = wdw.get_height()
 
     # make code_img image full screen. Assume it is thinner than screen width
-    global code_img, img_curr
-    img_curr_pg = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), 'RGB')
+    global img_curr, img_orig
     new_height = wdw_height
-    new_width = (wdw_height / img_curr_pg.get_height()) * img_curr_pg.get_width()
-    code_img = pygame.transform.scale(img_curr_pg, (new_height, new_width))
+    new_width = int((wdw_height / img_curr.height) * img_curr.width)
+    img_curr = img_orig.resize((new_width, new_height)).filter(ImageFilter.GaussianBlur(200))
 
 
 def draw_noise_pixel(wdw: pygame.Surface, color: tuple[int, int, int], coord: tuple[int, int]) -> None:
@@ -57,18 +57,24 @@ def draw_noise_pixel(wdw: pygame.Surface, color: tuple[int, int, int], coord: tu
 
 
 def update_drawing():
-    global code_img
-    global wdw_width
-    global wdw_height
+    global img_curr
+    global wdw_width, wdw_height
 
     wdw.fill((0, 0, 0))
 
-    code_img_top_left_x = (wdw_width // 2) - (code_img.get_width() // 2)
-    code_img_top_left_y = (wdw_height // 2) - (code_img.get_height() // 2)
+    code_img_top_left_x = (wdw_width // 2) - (img_curr.width // 2)
+    code_img_top_left_y = (wdw_height // 2) - (img_curr.height // 2)
 
+    # code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), 'RGB')
     # wdw.blit(code_img, (code_img_top_left_x, code_img_top_left_y)) # optionally show the code_img image for development purposes
 
-    # draw noise box per box
+    # distort the code image
+    img_curr_size = copy.deepcopy(img_curr.size)
+    img_curr = img_orig.filter(ImageFilter.GaussianBlur(20))
+    img_curr = img_curr.resize(img_curr_size)
+    code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), 'RGB')
+
+    # draw noise based on the state of the code image
     noise_pxls_horizontal = wdw_width // NOISE_PXL_WDHT
     noise_pxls_vertical = wdw_height // NOISE_PXL_HGHT
 
