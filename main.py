@@ -1,6 +1,7 @@
 import sys
 
 import pygame
+from PIL import Image, ImageFilter
 
 pygame.init()
 
@@ -16,8 +17,10 @@ pygame.display.set_caption('denoiser')
 FPS = 25
 clk = pygame.time.Clock()
 
-code_img_PATH = "images/test1.png"
-code_img = pygame.image.load(code_img_PATH)
+CODE_IMG_PATH = "images/test1.png"
+img_orig = Image.open(CODE_IMG_PATH)
+img_curr = img_orig.filter(ImageFilter.GaussianBlur(2))
+code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), "RGB")
 
 wdw_width = wdw.get_width()
 wdw_height = wdw.get_height()
@@ -39,10 +42,11 @@ def update_sizing():
     wdw_height = wdw.get_height()
 
     # make code_img image full screen. Assume it is thinner than screen width
-    global code_img
+    global code_img, img_curr
+    img_curr_pg = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), 'RGB')
     new_height = wdw_height
-    new_width = (wdw_height / code_img.get_height()) * code_img.get_width()
-    code_img = pygame.transform.scale(code_img, (new_height, new_width))
+    new_width = (wdw_height / img_curr_pg.get_height()) * img_curr_pg.get_width()
+    code_img = pygame.transform.scale(img_curr_pg, (new_height, new_width))
 
 
 def draw_noise_pixel(wdw: pygame.Surface, color: tuple[int, int, int], coord: tuple[int, int]) -> None:
