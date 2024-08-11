@@ -65,6 +65,10 @@ def draw_noise_pixel(wdw: pygame.Surface, color: tuple[int, int, int], coord: tu
     pygame.draw.rect(wdw, color, (coord_x, coord_y, NOISE_PXL_WDHT, NOISE_PXL_HGHT))
 
 
+def calc_code_value(x, y):
+    return (0, 0, 0)
+
+
 def draw_noise():
     global img_curr
     global wdw_width, wdw_height
@@ -88,6 +92,8 @@ def draw_noise():
     noise_pxls_vertical = wdw_height // NOISE_PXL_HGHT
 
     for pxl in range(noise_pxls_horizontal * noise_pxls_vertical):
+        code_val = 100 # % of the color to keep
+
         # get the coordinates of the pixel
         pxl_tl_x = (pxl % noise_pxls_horizontal) * NOISE_PXL_WDHT
         pxl_tl_y = (pxl // noise_pxls_horizontal) * NOISE_PXL_HGHT
@@ -105,12 +111,20 @@ def draw_noise():
             rel_y = pxl_mid_y - code_img_top_left_y
             color = pygme_code_img.get_at((rel_x, rel_y))
 
-            # color the pixel
-            draw_noise_pixel(wdw, color, (pxl_mid_x, pxl_mid_y))
-            continue
+            # get the 'whiteness' of the pixel
+            code_val = color.grayscale().hsva[2]  # hsva = hue (0-360), saturation (0-100), value (0-100), alpha (0-100)
 
-        # just draw if it does not fall over the image
-        draw_noise_pixel(wdw, (100, 255, 100), (pxl_mid_x, pxl_mid_y))
+        def map_func(val):
+            res = val * (code_val / 100)
+            if res > 255:
+                return 255
+            elif res < 0:
+                return 0
+            return res
+
+        # multiply the 'whiteness' of the code image with the preferred background color
+        color = tuple(map(map_func, (100, 255, 100)))
+        draw_noise_pixel(wdw, color, (pxl_mid_x, pxl_mid_y))
 
 
 def dials_main():
@@ -129,8 +143,8 @@ def dials_main():
 
 
 if __name__ == '__main__':
-    thread_settings = threading.Thread(target=dials_main)
-    thread_settings.start()
+    # thread_settings = threading.Thread(target=dials_main)
+    # thread_settings.start()
 
     while True:
         handle_events()
