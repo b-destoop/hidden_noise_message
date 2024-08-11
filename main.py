@@ -1,13 +1,9 @@
 import copy
 import sys
-import threading
-import random
 from tkinter import Tk
 
-import numpy
-import numpy as np
 import cv2 as cv
-
+import numpy as np
 import pygame
 from PIL import Image, ImageFilter
 
@@ -81,31 +77,19 @@ def draw_noise():
 
     wdw.fill((0, 0, 0))
 
-    code_img_top_left_x = (wdw_width // 2) - (img_curr.width // 2)
-    code_img_top_left_y = (wdw_height // 2) - (img_curr.height // 2)
-
-    # code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), 'RGB')
-    # wdw.blit(code_img, (code_img_top_left_x, code_img_top_left_y)) # optionally show the code_img image for development purposes
-
     # distort the code image
     img_curr_size = copy.deepcopy(img_curr.size)
     img_curr = img_orig.filter(ImageFilter.GaussianBlur(invisibility))
     img_curr = img_curr.resize(img_curr_size)
-    pygme_code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), FORMAT).convert()
-    # wdw.blit(pygme_code_img, (code_img_top_left_x, code_img_top_left_y))
 
     # draw noise based on the state of the code image
     noise_pxls_horizontal = wdw_width // NOISE_PXL_WDHT
     noise_pxls_vertical = wdw_height // NOISE_PXL_HGHT
 
     # numpy noise code
-
     code = np.asarray(img_curr)
     h_start, w_start, _ = code.shape
-    w_diff = abs(wdw_width - w_start)
     code = cv.resize(code, (noise_pxls_horizontal, noise_pxls_vertical), interpolation=cv.INTER_NEAREST)  # less pixels
-    # code = cv.resize(code, (w_start, h_start), interpolation=cv.INTER_NEAREST)
-    # code = numpy.pad(code, ((0, 0), (w_diff // 2, w_diff // 2), (0, 0)), 'minimum')
 
     raster_code = np.random.normal(0, invisibility, (noise_pxls_vertical, noise_pxls_horizontal, 3)).astype(np.uint8)
     raster_code = raster_code * code
