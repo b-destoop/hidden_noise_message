@@ -105,7 +105,7 @@ def draw_noise():
             continue
 
         # just draw if it does not fall over the image
-        draw_noise_pixel(wdw, (0, 255, 0), (pxl_mid_x, pxl_mid_y))
+        draw_noise_pixel(wdw, (100, 255, 100), (pxl_mid_x, pxl_mid_y))
 
 
 if __name__ == '__main__':
