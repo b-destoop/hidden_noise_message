@@ -17,6 +17,20 @@ a smaller standard deviation.
 
 > _note_ : the code that is to be shown should be white on a black background.
 
+## sound
+
+Sound is captured using the default microphone of the system.
+
+The `volume` is calculated using `volume = 20 * log10(avg(sample))`. This parameter is very volatile, therefore the
+following helper parameters are also calculated:
+
+- `max volume`: the highest value of `volume` that was measured with the currently running application
+- `min volume`: the lowest value of `volume` that was measured with the currently running application
+- `relative volume`: a number indicating where the current `volume` sits between `max volume` and `min volume`. 1 means
+  the current value of `volume` is the same as `max volume`. The same applies for 0 being represent of `min volume`
+- `average relative volume`: a time averaged version of relative volume. This gives a slower changing parameter. This
+  parameter is to be used for the visibility application.
+
 ## todo
 
 - [x] create a window with static noise
