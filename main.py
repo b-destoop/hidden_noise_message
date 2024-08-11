@@ -3,6 +3,7 @@ import sys
 import threading
 import random
 from tkinter import Tk
+import numpy as np
 
 import pygame
 from PIL import Image, ImageFilter
@@ -20,7 +21,7 @@ NOISE_PXL_HGHT = 5
 wdw = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption('denoiser')
 
-FPS = 25
+FPS = 15
 clk = pygame.time.Clock()
 
 CODE_IMG_PATH = "images/test1.png"
@@ -86,46 +87,22 @@ def draw_noise():
     img_curr_size = copy.deepcopy(img_curr.size)
     img_curr = img_orig.filter(ImageFilter.GaussianBlur(visibility))
     img_curr = img_curr.resize(img_curr_size)
-    pygme_code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), 'RGB')
+    pygme_code_img = pygame.image.frombytes(img_curr.tobytes(), (img_curr.width, img_curr.height), 'RGB').convert()
+    # wdw.blit(pygme_code_img, (code_img_top_left_x, code_img_top_left_y))
 
     # draw noise based on the state of the code image
     noise_pxls_horizontal = wdw_width // NOISE_PXL_WDHT
     noise_pxls_vertical = wdw_height // NOISE_PXL_HGHT
 
-    for pxl in range(noise_pxls_horizontal * noise_pxls_vertical):
-        code_val = 100  # % of the color to keep
-
-        # get the coordinates of the pixel
-        pxl_tl_x = (pxl % noise_pxls_horizontal) * NOISE_PXL_WDHT
-        pxl_tl_y = (pxl // noise_pxls_horizontal) * NOISE_PXL_HGHT
-
-        pxl_mid_x = pxl_tl_x + NOISE_PXL_WDHT // 2
-        pxl_mid_y = pxl_tl_y + NOISE_PXL_HGHT // 2
-
-        # check if the pixel falls over the code image
-        if (pxl_mid_x >= code_img_top_left_x) \
-                and (pxl_mid_x < (code_img_top_left_x + pygme_code_img.get_width())) \
-                and (pxl_mid_y >= code_img_top_left_y) \
-                and (pxl_mid_y < code_img_top_left_y + pygme_code_img.get_height()):
-            # get the color value of that part of the code_img image
-            rel_x = pxl_mid_x - code_img_top_left_x
-            rel_y = pxl_mid_y - code_img_top_left_y
-            color = pygme_code_img.get_at((rel_x, rel_y))
-
-            # get the 'whiteness' of the pixel
-            code_val = color.grayscale().hsva[2]  # hsva = hue (0-360), saturation (0-100), value (0-100), alpha (0-100)
+    # numpy noise code
+    raster = np.random.normal(100, 75, (noise_pxls_vertical, noise_pxls_horizontal, 3)).astype(np.uint8)
 
 
-        # create noise with randomness
-        rand_r = random.uniform(0, 255)
-        rand_g = random.uniform(0, 255)
-        rand_b = random.uniform(0, 255)
 
-        color = rand_r, rand_g, rand_b
-        color = tuple(map(lambda x: x * code_val/100, color))
-
-        # map the 'whiteness' of the code image with the preferred background color
-        draw_noise_pixel(wdw, color, (pxl_mid_x, pxl_mid_y))
+    pil_noise = Image.fromarray(raster, 'RGB')
+    pil_noise = pil_noise.resize((wdw_width, wdw_height))
+    pyg_img = pygame.image.frombytes(pil_noise.tobytes(), (pil_noise.width, pil_noise.height), 'RGB')
+    wdw.blit(pyg_img, (0, 0))
 
 
 def dials_main():

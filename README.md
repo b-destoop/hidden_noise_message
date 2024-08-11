@@ -10,6 +10,11 @@ picked up and the secret sound that is to be played.
 
 > _optional improvement_ : have the code show when no noise is made!
 
+## noise visibility tactic
+
+Create noise using a gaussian curve. For the values which coincide with the code image, this gaussian curve should have
+a smaller standard deviation.
+
 ## todo
 
 - [x] create a window with static noise
