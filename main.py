@@ -28,12 +28,16 @@ wdw_height = wdw.get_height()
 
 
 def handle_events():
+    global wdw
     for event in pygame.event.get():
         match event.type:
             case pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             case pygame.VIDEORESIZE:
+                update_sizing()
+            case pygame.MOUSEBUTTONDOWN:
+                pygame.display.toggle_fullscreen()
                 update_sizing()
 
 
@@ -56,7 +60,7 @@ def draw_noise_pixel(wdw: pygame.Surface, color: tuple[int, int, int], coord: tu
     pygame.draw.rect(wdw, color, (coord_x, coord_y, NOISE_PXL_WDHT, NOISE_PXL_HGHT))
 
 
-def update_drawing():
+def draw_noise():
     global img_curr
     global wdw_width, wdw_height
 
@@ -108,7 +112,7 @@ if __name__ == '__main__':
 
     while True:
         handle_events()
-        update_drawing()
+        draw_noise()
 
         pygame.display.update()
         pygame.display.flip()
