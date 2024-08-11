@@ -12,11 +12,11 @@ picked up and the secret sound that is to be played.
 
 ## todo
 
-- [ ] create a window with static noise
+- [x] create a window with static noise
 - [ ] receive sound
 - [ ] find comparison metric between sound and preferred sound (fourier? convolution? machine learning?)
 - [ ] load in image with a message
-- [ ] distort image according to the comparison metric
+- [x] distort image according to the comparison metric
 - [ ] create an extra window with tuning specifics
     - [ ] load in image
     - [ ] choose a microphone source
