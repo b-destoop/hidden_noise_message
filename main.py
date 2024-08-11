@@ -75,8 +75,6 @@ def draw_noise():
     global img_curr
     global wdw_width, wdw_height
 
-    wdw.fill((0, 0, 0))
-
     # distort the code image
     img_curr_size = copy.deepcopy(img_curr.size)
     img_curr = img_orig.filter(ImageFilter.GaussianBlur(invisibility))
@@ -127,6 +125,9 @@ if __name__ == '__main__':
 
     while True:
         handle_events()
+
+        wdw.fill((0, 0, 0))
+
         draw_noise()
 
         pygame.display.update()
